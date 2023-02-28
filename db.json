@@ -156,6 +156,14 @@
         {
           "id": 2,
           "username": "auer"
+        },
+        {
+          "id": 8,
+          "username": "maverick"
+        },
+        {
+          "id": 6,
+          "username": "steuber"
         }
       ]
     },
@@ -172,12 +180,20 @@
           "username": "maverick"
         },
         {
-          "id": 6,
-          "username": "steuber"
-        },
-        {
           "id": 5,
           "username": "feels-like-summer"
+        },
+        {
+          "id": 2,
+          "username": "auer"
+        },
+        {
+          "id": 10,
+          "username": "macejkovic"
+        },
+        {
+          "id": 6,
+          "username": "steuber"
         }
       ]
     },

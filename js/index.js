@@ -1,80 +1,69 @@
 urlJSON_Books = 'http://localhost:3000/books'
 urlJSON_Users = 'http://localhost:3000/users'
 currentUser = undefined
-/*
-json data structure-books: id, title, subtitle, description, author, img_url, users[array], users[array].id, users[array].username
-json data structure-users: id, username
-*/
-
-
-
-// GET all users -> randomly select one
-
-// GET all data -> pull list of titles -> add list of titles to DOM + eventlistener to each title
-
-// when user clicks title -> GET (single) data for that title -> add book info to DOM + event listener for like /unlike button
-    // -> when button is being built, check if current user is in like list : yes => unlike no => like
-
-// when button is pressed -> get data for user -> invert likes / unlikes -> PATCH data -> update like list on DOM
-
-
-
-
-
-
 
 
 function updateLikeStatus(e){
-    // fetch data
-    // pass to invert likes / unlikes 
-    // patch data
-    // update like list
     fetch(`${urlJSON_Books}/${e.target.id}`)
     .then(resp => resp.json())
     .then(data => {
-        
-        const text = likeUnlikeSwitch(data) //switches like /unlike
-        console.log(text)
-        e.target.innerText = text
 
+        const text = determineStatus.call(data)
         switch (text){
             case "Unlike": 
-                unlikePatchUpdate.call(data)
+                removeLike.call(data)
                 break;
             case "Like":
-                likePatchUpdate.call(data)
+                addLike.call(data)
                 break;
         }
+        patchData.call(data)
     })
 
-    function likeUnlikeSwitch(obj){
-        
-        const status = determineStatus.call(obj)
-
-        const likeTable = { 
-            Unlike: "Like",
-            Like: "Unlike"
-        }
-        return likeTable[status]
-    }
-
-    
-    function likePatchUpdate(){
-        console.log("this worked")
-    }
-
-    function unlikePatchUpdate(){
-        this.users.push(currentUser)
-        patchData(this)
-    }
 }
-
 
 function determineStatus(){
     const status = Boolean(this.users.find(element => element.username === currentUser.username))
     return status ? "Unlike" : "Like"
 }
 
+function removeLike(){
+    const index = this.users.indexOf(this.users.find(user => user.username === currentUser.username))
+    this.users.splice(index, 1)
+}
+
+function addLike(){
+    this.users.push(currentUser)
+}
+
+
+function patchData(){
+    fetch(urlJSON_Books + "/" + this.id, {
+        method: 'PATCH',
+        headers: {
+            "Content-Type" : "application/json",
+            Accept: "application/json"
+        },
+        body: JSON.stringify(this)
+    })
+    .then(resp => resp.json())
+    .then(data =>{
+        buildBookDetails(data)
+    })
+}
+
+
+// separated this to use elsewhere within program?
+function buildUserLikeList(array){
+
+    const ulList = document.createElement('ul')
+    array.forEach(user => {
+        const li = document.createElement('li')
+        li.innerText = user.username
+        ulList.append(li)
+    })
+    return ulList
+}
 
 
 function buildBookDetails(obj){
@@ -87,21 +76,16 @@ function buildBookDetails(obj){
         <h3>${obj.author}</h3>
         <p>${obj.description}</p>`
 
-    const ulList = document.createElement('ul')
-    obj.users.forEach(user => {
-        const li = document.createElement('li')
-        li.innerText = user.username
-        ulList.append(li)
-    })
+    const likeList = buildUserLikeList(obj.users)
 
     const button = document.createElement('button')
     button.id = obj.id
     button.innerText = determineStatus.call(obj)
     button.addEventListener('click', updateLikeStatus)
 
-    divShowPanel.append(ulList, button)
-
+    divShowPanel.append(likeList, button)
 }
+
 
 // THIS USES BOOK TITLE TO SEARCH FOR BOOK. YIELDS SINGLE RESULT BUT WITHIN AN ARRAY
 function getBookDetails(title){
