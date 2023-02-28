@@ -5,6 +5,9 @@ currentUser = undefined
 json data structure-books: id, title, subtitle, description, author, img_url, users[array], users[array].id, users[array].username
 json data structure-users: id, username
 */
+
+
+
 // GET all users -> randomly select one
 
 // GET all data -> pull list of titles -> add list of titles to DOM + eventlistener to each title
@@ -20,9 +23,56 @@ json data structure-users: id, username
 
 
 
-function updateLikeStatus(e){
-    //e.target.id
 
+function updateLikeStatus(e){
+    // fetch data
+    // pass to invert likes / unlikes 
+    // patch data
+    // update like list
+    fetch(`${urlJSON_Books}/${e.target.id}`)
+    .then(resp => resp.json())
+    .then(data => {
+        
+        const text = likeUnlikeSwitch(data) //switches like /unlike
+        console.log(text)
+        e.target.innerText = text
+
+        switch (text){
+            case "Unlike": 
+                unlikePatchUpdate.call(data)
+                break;
+            case "Like":
+                likePatchUpdate.call(data)
+                break;
+        }
+    })
+
+    function likeUnlikeSwitch(obj){
+        
+        const status = determineStatus.call(obj)
+
+        const likeTable = { 
+            Unlike: "Like",
+            Like: "Unlike"
+        }
+        return likeTable[status]
+    }
+
+    
+    function likePatchUpdate(){
+        console.log("this worked")
+    }
+
+    function unlikePatchUpdate(){
+        this.users.push(currentUser)
+        patchData(this)
+    }
+}
+
+
+function determineStatus(){
+    const status = Boolean(this.users.find(element => element.username === currentUser.username))
+    return status ? "Unlike" : "Like"
 }
 
 
@@ -44,21 +94,12 @@ function buildBookDetails(obj){
         ulList.append(li)
     })
 
-    divShowPanel.append(ulList)
-
-
-    const likeStatus = Boolean(obj.users.find(element => element.username === currentUser))
     const button = document.createElement('button')
     button.id = obj.id
-
-    if (likeStatus){
-        button.innerText = "Unlike"
-    } else {
-        button.innerText = 'Like'
-    }
-
+    button.innerText = determineStatus.call(obj)
     button.addEventListener('click', updateLikeStatus)
-    divShowPanel.append(button)
+
+    divShowPanel.append(ulList, button)
 
 }
 
@@ -68,7 +109,7 @@ function getBookDetails(title){
 
     fetch(`${urlJSON_Books}?title_like=${titleFormated}`)
     .then(response => response.json())
-    .then(data => buildBookDetails(data[0]))
+    .then(data => buildBookDetails(data[0]))   // passing single object and not the entire array
 }
 
 
@@ -89,14 +130,14 @@ function buildBookList(array){
 
 
 function selectUser(array){
-    currentUser = array[Math.floor(Math.random()*array.length)].username
+    currentUser = array[Math.floor(Math.random()*array.length)]
     console.log(currentUser)
 }
 
 
 
 // get both user data and book data and pass it to their handlers
-function getData(){
+function getDataStart(){
     fetch(urlJSON_Books)
     .then(response => response.json())
     .then(data => buildBookList(data))
@@ -108,5 +149,5 @@ function getData(){
 
 
 document.addEventListener("DOMContentLoaded", function() {
-    getData()
+    getDataStart()
 });
